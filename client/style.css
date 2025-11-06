@@ -1,0 +1,227 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-list {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.user-list .label {
+    font-weight: 500;
+    margin-right: 5px;
+}
+
+.user-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    backdrop-filter: blur(10px);
+}
+
+.user-badge .color-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.toolbar {
+    background: #f8f9fa;
+    padding: 15px 30px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.tool-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 15px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.tool-btn {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.tool-btn:hover {
+    background: #f0f0f0;
+    border-color: #999;
+}
+
+.tool-btn.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.tool-btn.danger {
+    background: #ff6b6b;
+    color: white;
+    border-color: #ff6b6b;
+}
+
+.tool-btn.danger:hover {
+    background: #ff5252;
+}
+
+.tool-group label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+#colorPicker {
+    width: 50px;
+    height: 35px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+#strokeWidth {
+    width: 100px;
+}
+
+#strokeWidthValue {
+    min-width: 30px;
+    text-align: center;
+    font-weight: 500;
+}
+
+#roomInput {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 150px;
+}
+
+.canvas-container {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    background: #fafafa;
+    overflow: hidden;
+}
+
+#drawingCanvas,
+#cursorCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: crosshair;
+    touch-action: none;
+}
+
+#drawingCanvas {
+    background: white;
+    z-index: 1;
+}
+
+#cursorCanvas {
+    z-index: 2;
+    pointer-events: none;
+}
+
+.status-bar {
+    background: #f8f9fa;
+    padding: 10px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #e0e0e0;
+    font-size: 12px;
+    color: #666;
+}
+
+#statusText {
+    font-weight: 500;
+}
+
+#statusText.connected {
+    color: #52be80;
+}
+
+#statusText.disconnected {
+    color: #ff6b6b;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .toolbar {
+        padding: 10px 15px;
+    }
+
+    .tool-group {
+        padding: 5px 10px;
+    }
+
+    header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+
+    .canvas-container {
+        height: 400px;
+    }
+}
+

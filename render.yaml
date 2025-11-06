@@ -1,0 +1,15 @@
+# Render Blueprint for Collaborative Canvas
+# This file allows one-click deployment on Render
+
+services:
+  - type: web
+    name: collaborative-canvas
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: node dist/server/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+    healthCheckPath: /
+    plan: free  # Change to 'starter' or 'standard' for production
+

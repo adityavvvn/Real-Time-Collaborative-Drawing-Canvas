@@ -4,26 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Collaborative Drawing Canvas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🎨 Collaborative Drawing Canvas</h1>
+            <h1>Collaborative Drawing Canvas</h1>
             <div class="user-info">
                 <div class="user-list" id="userList">
-                    <span class="label">Online Users:</span>
+                    <span class="label">Online Users</span>
                 </div>
             </div>
         </header>
 
         <div class="toolbar">
             <div class="tool-group">
-                <button id="brushTool" class="tool-btn active" title="Brush">
-                    🖌️ Brush
+                <button id="brushTool" class="tool-btn active" title="Brush Tool">
+                    <span>🖌️</span> Brush
                 </button>
-                <button id="eraserTool" class="tool-btn" title="Eraser">
-                    🧹 Eraser
+                <button id="eraserTool" class="tool-btn" title="Eraser Tool">
+                    <span>🧹</span> Eraser
                 </button>
             </div>
 
@@ -39,14 +42,22 @@
             </div>
 
             <div class="tool-group">
-                <button id="undoBtn" class="tool-btn" title="Undo">↶ Undo</button>
-                <button id="redoBtn" class="tool-btn" title="Redo">↷ Redo</button>
-                <button id="clearBtn" class="tool-btn danger" title="Clear Canvas">🗑️ Clear</button>
+                <button id="undoBtn" class="tool-btn" title="Undo Last Action">
+                    <span>↶</span> Undo
+                </button>
+                <button id="redoBtn" class="tool-btn" title="Redo Last Action">
+                    <span>↷</span> Redo
+                </button>
+                <button id="clearBtn" class="tool-btn danger" title="Clear Entire Canvas">
+                    <span>🗑️</span> Clear
+                </button>
             </div>
 
             <div class="tool-group">
-                <input type="text" id="roomInput" placeholder="Room ID (default)" value="default">
-                <button id="joinRoomBtn" class="tool-btn">Join Room</button>
+                <input type="text" id="roomInput" placeholder="Enter Room ID" value="default">
+                <button id="joinRoomBtn" class="tool-btn" title="Join or Switch Room">
+                    <span>🚪</span> Join Room
+                </button>
             </div>
         </div>
 

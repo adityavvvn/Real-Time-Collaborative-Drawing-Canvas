@@ -13,11 +13,15 @@ class App {
   private currentColor: string = '#000000';
   private currentStrokeWidth: number = 5;
   private currentOperationId: string | null = null;
+  private currentUsername: string = '';
 
   constructor() {
     console.log('🚀 Initializing application...');
     
     try {
+      // Check for saved username
+      const savedUsername = localStorage.getItem('canvas-username');
+      
       // Initialize canvas
       this.canvasManager = new CanvasManager('drawingCanvas', 'cursorCanvas');
       console.log('✅ Canvas initialized');
@@ -30,9 +34,8 @@ class App {
       this.setupUI();
       console.log('✅ UI event listeners setup');
       
-      // Connect to server
-      this.wsClient.connect();
-      console.log('🔄 Attempting to connect to server...');
+      // Setup username modal
+      this.setupUsernameModal(savedUsername);
       
       // Setup canvas drawing handlers
       this.setupCanvasHandlers();
@@ -45,6 +48,117 @@ class App {
         statusElement.className = 'disconnected';
       }
     }
+  }
+
+  private setupUsernameModal(savedUsername: string | null): void {
+    const modal = document.getElementById('usernameModal');
+    const usernameInput = document.getElementById('usernameInput') as HTMLInputElement;
+    const setUsernameBtn = document.getElementById('setUsernameBtn');
+    const changeUsernameBtn = document.getElementById('changeUsernameBtn');
+    const suggestionButtons = document.querySelectorAll('.suggestion-btn');
+
+    if (!modal || !usernameInput || !setUsernameBtn) return;
+
+    // If username exists, use it and connect immediately
+    if (savedUsername && savedUsername.trim()) {
+      this.currentUsername = savedUsername.trim();
+      this.updateCurrentUserDisplay();
+      this.wsClient.setUsername(this.currentUsername);
+      this.wsClient.connect();
+      return;
+    }
+
+    // Show modal if no username
+    modal.classList.add('show');
+
+    // Handle suggestion buttons
+    suggestionButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const username = btn.getAttribute('data-username');
+        if (username) {
+          usernameInput.value = username;
+          usernameInput.focus();
+        }
+      });
+    });
+
+    // Handle Enter key
+    usernameInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        this.handleSetUsername();
+      }
+    });
+
+    // Handle set username button
+    setUsernameBtn.addEventListener('click', () => {
+      this.handleSetUsername();
+    });
+
+    // Handle change username button
+    if (changeUsernameBtn) {
+      changeUsernameBtn.addEventListener('click', () => {
+        modal.classList.add('show');
+        usernameInput.value = this.currentUsername;
+        usernameInput.focus();
+        usernameInput.select();
+      });
+    }
+
+    // Focus input when modal opens
+    usernameInput.focus();
+  }
+
+  private handleSetUsername(): void {
+    const usernameInput = document.getElementById('usernameInput') as HTMLInputElement;
+    const modal = document.getElementById('usernameModal');
+    const setUsernameBtn = document.getElementById('setUsernameBtn');
+
+    if (!usernameInput || !modal) return;
+
+    const username = usernameInput.value.trim();
+
+    if (!username) {
+      // Show error animation
+      usernameInput.style.borderColor = '#ef4444';
+      usernameInput.style.animation = 'shake 0.5s';
+      setTimeout(() => {
+        usernameInput.style.borderColor = '';
+        usernameInput.style.animation = '';
+      }, 500);
+      return;
+    }
+
+    // Validate username (alphanumeric, spaces, and some special chars, max 20 chars)
+    if (username.length > 20) {
+      usernameInput.value = username.substring(0, 20);
+      return;
+    }
+
+    // Save username
+    this.currentUsername = username;
+    localStorage.setItem('canvas-username', username);
+    this.updateCurrentUserDisplay();
+
+    // Set username in WebSocket client
+    this.wsClient.setUsername(username);
+
+    // Hide modal
+    modal.classList.remove('show');
+
+    // Connect to server
+    this.wsClient.connect();
+    console.log('🔄 Attempting to connect to server...');
+  }
+
+  private updateCurrentUserDisplay(): void {
+    const currentUserNameElement = document.getElementById('currentUserName');
+    if (currentUserNameElement) {
+      currentUserNameElement.textContent = this.currentUsername;
+    }
+  }
+
+  getCurrentUsername(): string {
+    return this.currentUsername;
   }
 
   private setupUI(): void {
@@ -107,14 +221,14 @@ class App {
 
     joinRoomBtn?.addEventListener('click', () => {
       const roomId = roomInput?.value || 'default';
-      this.wsClient.joinRoom(roomId);
+      this.wsClient.joinRoom(roomId, this.currentUsername);
     });
 
     // Allow Enter key to join room
     roomInput?.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         const roomId = roomInput.value || 'default';
-        this.wsClient.joinRoom(roomId);
+        this.wsClient.joinRoom(roomId, this.currentUsername);
       }
     });
   }

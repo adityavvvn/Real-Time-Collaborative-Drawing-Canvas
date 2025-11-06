@@ -10,10 +10,51 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Username Modal -->
+    <div id="usernameModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Welcome! 👋</h2>
+                <p>Choose a username to start drawing</p>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="usernameInput">Your Username</label>
+                    <input 
+                        type="text" 
+                        id="usernameInput" 
+                        placeholder="Enter your username"
+                        maxlength="20"
+                        autocomplete="off"
+                    >
+                    <div class="input-hint">This will be visible to other users</div>
+                </div>
+                <div class="username-suggestions">
+                    <span class="suggestion-label">Quick picks:</span>
+                    <button class="suggestion-btn" data-username="Artist">Artist</button>
+                    <button class="suggestion-btn" data-username="Creator">Creator</button>
+                    <button class="suggestion-btn" data-username="Designer">Designer</button>
+                    <button class="suggestion-btn" data-username="Sketch">Sketch</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="setUsernameBtn" class="btn-primary">
+                    <span>✨</span> Start Drawing
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <header>
             <h1>Collaborative Drawing Canvas</h1>
             <div class="user-info">
+                <div class="current-user" id="currentUser">
+                    <span class="user-name" id="currentUserName">Guest</span>
+                    <button id="changeUsernameBtn" class="change-username-btn" title="Change Username">
+                        ✏️
+                    </button>
+                </div>
                 <div class="user-list" id="userList">
                     <span class="label">Online Users</span>
                 </div>

@@ -14,9 +14,17 @@ export class WebSocketClient {
   private canvasManager: CanvasManager;
   private currentOperationId: string | null = null;
   private isConnected: boolean = false;
+  private currentUsername: string = '';
 
   constructor(canvasManager: CanvasManager) {
     this.canvasManager = canvasManager;
+  }
+
+  /**
+   * Set the current username
+   */
+  setUsername(username: string): void {
+    this.currentUsername = username;
   }
 
   /**
@@ -50,7 +58,8 @@ export class WebSocketClient {
       console.log('✅ Connected to server');
       this.isConnected = true;
       this.updateStatus('Connected', true);
-      this.joinRoom('default');
+      // Join default room with username
+      this.joinRoom('default', this.currentUsername);
     });
 
     this.socket.on('disconnect', () => {

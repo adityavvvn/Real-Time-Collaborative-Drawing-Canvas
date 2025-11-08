@@ -147,11 +147,3 @@ collaborative-canvas/
 
 **Total**: ~15 hours
 
-## 📝 License
-
-MIT
-
-## 🤝 Contributing
-
-This is an assignment project. For questions or issues, please refer to the ARCHITECTURE.md file for technical details.
-

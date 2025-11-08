@@ -67,12 +67,19 @@ io.on('connection', (socket) => {
     // Notify others in the room
     socket.to(currentRoomId).emit('user-joined', user);
 
-    // Send list of current users
+    // Send list of current users to all in room
     const users = room.getUsers();
     socket.emit('users-update', users);
     socket.to(currentRoomId).emit('users-update', users);
 
     console.log(`User ${socket.id} joined room ${currentRoomId}`);
+  });
+
+  // Handle user list request
+  socket.on('request-users', () => {
+    const room = roomManager.getRoom(currentRoomId);
+    const users = room.getUsers();
+    socket.emit('users-list', users);
   });
 
   // Handle drawing operations

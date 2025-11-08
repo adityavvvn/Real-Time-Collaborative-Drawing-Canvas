@@ -121,11 +121,11 @@ collaborative-canvas/
 
 3. **Limited Scalability**: The current implementation stores all operations in memory. For many users or long sessions, this could consume significant memory.
 
-4. **No Image Export**: Cannot save or export the canvas as an image file.
+4. **Image Export**: ✅ Now available! Use the export button (💾) or Ctrl+S.
 
 5. **Browser Compatibility**: Requires modern browsers with ES2020 support and WebSocket support.
 
-6. **Network Issues**: No automatic reconnection handling. If connection is lost, users need to refresh the page.
+6. **Network Issues**: No automatic reconnection handling. If connection is lost, users need to refresh the page. (Note: Connection status is displayed in real-time)
 
 ## 🐛 Known Bugs
 

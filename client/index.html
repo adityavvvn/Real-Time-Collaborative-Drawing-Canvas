@@ -57,6 +57,20 @@
                 </div>
                 <div class="user-list" id="userList">
                     <span class="label">Online Users</span>
+                    <button id="refreshUsersBtn" class="refresh-btn" title="Refresh User List">
+                        🔄
+                    </button>
+                </div>
+                <div class="header-actions">
+                    <button id="darkModeToggle" class="header-btn" title="Toggle Dark Mode">
+                        <span>🌙</span>
+                    </button>
+                    <button id="exportBtn" class="header-btn" title="Export Canvas (Ctrl+S)">
+                        <span>💾</span>
+                    </button>
+                    <button id="shareBtn" class="header-btn" title="Share Room Link">
+                        <span>🔗</span>
+                    </button>
                 </div>
             </div>
         </header>
@@ -74,6 +88,16 @@
             <div class="tool-group">
                 <label for="colorPicker">Color:</label>
                 <input type="color" id="colorPicker" value="#000000">
+                <div class="color-palette" id="colorPalette">
+                    <button class="color-swatch" data-color="#000000" style="background: #000000" title="Black"></button>
+                    <button class="color-swatch" data-color="#FF0000" style="background: #FF0000" title="Red"></button>
+                    <button class="color-swatch" data-color="#00FF00" style="background: #00FF00" title="Green"></button>
+                    <button class="color-swatch" data-color="#0000FF" style="background: #0000FF" title="Blue"></button>
+                    <button class="color-swatch" data-color="#FFFF00" style="background: #FFFF00" title="Yellow"></button>
+                    <button class="color-swatch" data-color="#FF00FF" style="background: #FF00FF" title="Magenta"></button>
+                    <button class="color-swatch" data-color="#00FFFF" style="background: #00FFFF" title="Cyan"></button>
+                    <button class="color-swatch" data-color="#FFA500" style="background: #FFA500" title="Orange"></button>
+                </div>
             </div>
 
             <div class="tool-group">
@@ -108,8 +132,67 @@
         </div>
 
         <div class="status-bar">
-            <span id="statusText">Connecting...</span>
-            <span id="fpsCounter">FPS: --</span>
+            <div class="status-left">
+                <span id="statusText">Connecting...</span>
+                <span id="strokeCount" class="stat-badge">Strokes: 0</span>
+            </div>
+            <div class="status-right">
+                <span id="fpsCounter">FPS: --</span>
+                <span class="shortcut-hint" title="Keyboard Shortcuts">⌨️ Press '?' for shortcuts</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div id="shortcutsModal" class="modal">
+        <div class="modal-content shortcuts-modal">
+            <div class="modal-header">
+                <h2>⌨️ Keyboard Shortcuts</h2>
+            </div>
+            <div class="modal-body">
+                <div class="shortcuts-list">
+                    <div class="shortcut-item">
+                        <kbd>B</kbd>
+                        <span>Brush Tool</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>E</kbd>
+                        <span>Eraser Tool</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl + Z</kbd>
+                        <span>Undo</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl + Y</kbd>
+                        <span>Redo</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl + S</kbd>
+                        <span>Export Canvas</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>Ctrl + K</kbd>
+                        <span>Clear Canvas</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>D</kbd>
+                        <span>Toggle Dark Mode</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <kbd>?</kbd>
+                        <span>Show Shortcuts</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" onclick="document.getElementById('shortcutsModal').classList.remove('show')">
+                    Got it!
+                </button>
+            </div>
         </div>
     </div>
 

@@ -5,6 +5,10 @@
 
 import { CanvasManager } from './canvas.js';
 import { WebSocketClient } from './websocket.js';
+import { Toast, copyToClipboard, downloadCanvas } from './utils.js';
+
+// Make Toast available globally for WebSocket notifications
+(window as any).Toast = Toast;
 
 class App {
   private canvasManager!: CanvasManager;
@@ -14,6 +18,8 @@ class App {
   private currentStrokeWidth: number = 5;
   private currentOperationId: string | null = null;
   private currentUsername: string = '';
+  private strokeCount: number = 0;
+  private isDarkMode: boolean = false;
 
   constructor() {
     console.log('🚀 Initializing application...');
@@ -36,6 +42,14 @@ class App {
       
       // Setup username modal
       this.setupUsernameModal(savedUsername);
+      
+      // Setup new features
+      this.setupDarkMode();
+      this.setupExport();
+      this.setupShare();
+      this.setupColorPalette();
+      this.setupKeyboardShortcuts();
+      this.setupAutoRefreshUsers();
       
       // Setup canvas drawing handlers
       this.setupCanvasHandlers();
@@ -233,6 +247,184 @@ class App {
     });
   }
 
+  private setupDarkMode(): void {
+    // Load saved preference
+    const saved = localStorage.getItem('dark-mode');
+    this.isDarkMode = saved === 'true';
+    if (this.isDarkMode) {
+      document.body.classList.add('dark-mode');
+      const toggle = document.getElementById('darkModeToggle');
+      if (toggle) toggle.innerHTML = '<span>☀️</span>';
+    }
+
+    const toggle = document.getElementById('darkModeToggle');
+    toggle?.addEventListener('click', () => {
+      this.isDarkMode = !this.isDarkMode;
+      document.body.classList.toggle('dark-mode', this.isDarkMode);
+      localStorage.setItem('dark-mode', String(this.isDarkMode));
+      
+      if (toggle) {
+        toggle.innerHTML = this.isDarkMode ? '<span>☀️</span>' : '<span>🌙</span>';
+      }
+      
+      Toast.info(this.isDarkMode ? 'Dark mode enabled' : 'Light mode enabled');
+    });
+  }
+
+  private setupExport(): void {
+    const exportBtn = document.getElementById('exportBtn');
+    exportBtn?.addEventListener('click', () => {
+      const canvas = document.getElementById('drawingCanvas') as HTMLCanvasElement;
+      if (canvas) {
+        downloadCanvas(canvas, `canvas-${Date.now()}.png`);
+      }
+    });
+  }
+
+  private setupShare(): void {
+    const shareBtn = document.getElementById('shareBtn');
+    shareBtn?.addEventListener('click', () => {
+      const roomInput = document.getElementById('roomInput') as HTMLInputElement;
+      const roomId = roomInput?.value || 'default';
+      const url = `${window.location.origin}?room=${roomId}`;
+      copyToClipboard(url);
+    });
+  }
+
+  private setupColorPalette(): void {
+    const swatches = document.querySelectorAll('.color-swatch');
+    const colorPicker = document.getElementById('colorPicker') as HTMLInputElement;
+
+    swatches.forEach(swatch => {
+      swatch.addEventListener('click', () => {
+        const color = swatch.getAttribute('data-color');
+        if (color) {
+          this.setColor(color);
+          if (colorPicker) {
+            colorPicker.value = color;
+          }
+          
+          // Update active state
+          swatches.forEach(s => s.classList.remove('active'));
+          swatch.classList.add('active');
+        }
+      });
+    });
+
+    // Update active swatch when color picker changes
+    colorPicker?.addEventListener('change', (e) => {
+      const target = e.target as HTMLInputElement;
+      const color = target.value.toUpperCase();
+      
+      swatches.forEach(s => {
+        const swatchColor = s.getAttribute('data-color')?.toUpperCase();
+        s.classList.toggle('active', swatchColor === color);
+      });
+    });
+  }
+
+  private setupKeyboardShortcuts(): void {
+    const shortcutsModal = document.getElementById('shortcutsModal');
+    const shortcutHint = document.querySelector('.shortcut-hint');
+
+    // Show shortcuts modal
+    const showShortcuts = () => {
+      if (shortcutsModal) {
+        shortcutsModal.classList.add('show');
+      }
+    };
+
+    shortcutHint?.addEventListener('click', showShortcuts);
+
+    document.addEventListener('keydown', (e) => {
+      // Don't trigger shortcuts when typing in inputs
+      if ((e.target as HTMLElement).tagName === 'INPUT') {
+        if (e.key === 'Enter') return; // Allow Enter in inputs
+        if (e.ctrlKey || e.metaKey) return; // Allow Ctrl shortcuts
+      }
+
+      // Keyboard shortcuts
+      if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        showShortcuts();
+      } else if (e.key === 'b' || e.key === 'B') {
+        if (!e.ctrlKey && !e.metaKey) {
+          e.preventDefault();
+          const brushTool = document.getElementById('brushTool');
+          brushTool?.click();
+        }
+      } else if (e.key === 'e' || e.key === 'E') {
+        if (!e.ctrlKey && !e.metaKey) {
+          e.preventDefault();
+          const eraserTool = document.getElementById('eraserTool');
+          eraserTool?.click();
+        }
+      } else if (e.key === 'd' || e.key === 'D') {
+        if (!e.ctrlKey && !e.metaKey) {
+          e.preventDefault();
+          const darkModeToggle = document.getElementById('darkModeToggle');
+          darkModeToggle?.click();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        const exportBtn = document.getElementById('exportBtn');
+        exportBtn?.click();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        const undoBtn = document.getElementById('undoBtn');
+        undoBtn?.click();
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        const redoBtn = document.getElementById('redoBtn');
+        redoBtn?.click();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        const clearBtn = document.getElementById('clearBtn');
+        clearBtn?.click();
+      }
+    });
+  }
+
+  private updateStrokeCount(): void {
+    this.strokeCount++;
+    const strokeCountElement = document.getElementById('strokeCount');
+    if (strokeCountElement) {
+      strokeCountElement.textContent = `Strokes: ${this.strokeCount}`;
+    }
+  }
+
+  private checkRoomParameter(): void {
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomId = urlParams.get('room');
+    if (roomId) {
+      const roomInput = document.getElementById('roomInput') as HTMLInputElement;
+      if (roomInput) {
+        roomInput.value = roomId;
+        // Auto-join room after connection
+        setTimeout(() => {
+          this.wsClient.joinRoom(roomId, this.currentUsername);
+          Toast.info(`Joined room: ${roomId}`);
+        }, 1000);
+      }
+    }
+  }
+
+  private setupAutoRefreshUsers(): void {
+    // Auto-refresh user list every 3 seconds
+    setInterval(() => {
+      if (this.wsClient && this.wsClient.isConnected) {
+        this.wsClient.requestUserListUpdate();
+      }
+    }, 3000);
+
+    // Also refresh when window gains focus
+    window.addEventListener('focus', () => {
+      if (this.wsClient && this.wsClient.isConnected) {
+        this.wsClient.requestUserListUpdate();
+      }
+    });
+  }
+
   private setupCanvasHandlers(): void {
     const canvas = document.getElementById('drawingCanvas') as HTMLCanvasElement;
     if (!canvas) return;
@@ -267,8 +459,10 @@ class App {
 
       if (this.currentTool === 'brush') {
         this.wsClient.sendDrawStart(point, this.currentColor, this.currentStrokeWidth, operationId);
+        this.updateStrokeCount();
       } else {
         this.wsClient.sendEraseStart(point, this.currentStrokeWidth, operationId);
+        this.updateStrokeCount();
       }
     };
 

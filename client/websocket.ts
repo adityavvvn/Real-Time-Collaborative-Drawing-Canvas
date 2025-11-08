@@ -13,7 +13,7 @@ export class WebSocketClient {
   private socket: any = null;
   private canvasManager: CanvasManager;
   private currentOperationId: string | null = null;
-  private isConnected: boolean = false;
+  public isConnected: boolean = false;
   private currentUsername: string = '';
 
   constructor(canvasManager: CanvasManager) {
@@ -144,15 +144,28 @@ export class WebSocketClient {
     this.socket.on('user-joined', (user: any) => {
       console.log('User joined:', user);
       this.updateUserList();
+      // Show toast notification
+      if (typeof (window as any).Toast !== 'undefined') {
+        (window as any).Toast.info(`${user.name} joined the room`);
+      }
     });
 
     this.socket.on('user-left', (data: { userId: string }) => {
       console.log('User left:', data.userId);
       this.canvasManager.removeUserCursor(data.userId);
       this.updateUserList();
+      // Show toast notification
+      if (typeof (window as any).Toast !== 'undefined') {
+        (window as any).Toast.info('A user left the room');
+      }
     });
 
     this.socket.on('users-update', (users: any[]) => {
+      this.updateUserList(users);
+    });
+
+    // Handle user list request response
+    this.socket.on('users-list', (users: any[]) => {
       this.updateUserList(users);
     });
   }
@@ -163,6 +176,10 @@ export class WebSocketClient {
   joinRoom(roomId: string, userName?: string): void {
     if (!this.socket) return;
     this.socket.emit('join-room', { roomId, userName });
+    // Request updated user list after joining
+    setTimeout(() => {
+      this.requestUserListUpdate();
+    }, 500);
   }
 
   /**
@@ -268,28 +285,59 @@ export class WebSocketClient {
   }
 
   /**
+   * Request user list update from server
+   */
+  requestUserListUpdate(): void {
+    if (!this.socket || !this.isConnected) return;
+    // Request current users from server
+    this.socket.emit('request-users');
+  }
+
+  /**
    * Update user list display
    */
-  private updateUserList(users?: any[]): void {
+  updateUserList(users?: any[]): void {
     const userListElement = document.getElementById('userList');
     if (!userListElement) return;
 
-    // If users not provided, we'll need to get them from the server
-    // For now, we'll just show a placeholder
+    // If users not provided, request from server
     if (!users) {
+      this.requestUserListUpdate();
       return;
     }
 
-    // Clear existing badges (except label)
+    // Clear existing badges (except label and refresh button)
     const label = userListElement.querySelector('.label');
+    const refreshBtn = userListElement.querySelector('.refresh-btn');
     userListElement.innerHTML = '';
+    
     if (label) {
       userListElement.appendChild(label);
     } else {
       const labelSpan = document.createElement('span');
       labelSpan.className = 'label';
-      labelSpan.textContent = 'Online Users:';
+      labelSpan.textContent = 'Online Users';
       userListElement.appendChild(labelSpan);
+    }
+
+    // Add refresh button if it doesn't exist
+    if (!refreshBtn) {
+      const refreshButton = document.createElement('button');
+      refreshButton.id = 'refreshUsersBtn';
+      refreshButton.className = 'refresh-btn';
+      refreshButton.title = 'Refresh User List';
+      refreshButton.innerHTML = '🔄';
+      refreshButton.addEventListener('click', () => {
+        this.requestUserListUpdate();
+        // Add spinning animation
+        refreshButton.style.animation = 'spin 0.5s ease';
+        setTimeout(() => {
+          refreshButton.style.animation = '';
+        }, 500);
+      });
+      userListElement.appendChild(refreshButton);
+    } else {
+      userListElement.appendChild(refreshBtn);
     }
 
     // Add user badges
@@ -301,6 +349,12 @@ export class WebSocketClient {
         <span>${user.name}</span>
       `;
       userListElement.appendChild(badge);
+    }
+
+    // Update user count
+    const userCount = users.length;
+    if (label) {
+      label.textContent = `Online Users (${userCount})`;
     }
   }
 

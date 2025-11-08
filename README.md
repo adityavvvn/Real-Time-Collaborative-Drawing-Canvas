@@ -1,6 +1,17 @@
 # Real-Time Collaborative Drawing Canvas
 
-A multi-user drawing application where multiple people can draw simultaneously on the same canvas with real-time synchronization.
+A modern, feature-rich multi-user drawing application where multiple people can draw simultaneously on the same canvas with real-time synchronization. Built with TypeScript, Socket.io, and HTML5 Canvas.
+
+## ✨ Key Features
+
+- 🎨 **Real-time Collaborative Drawing** - Multiple users drawing simultaneously with instant synchronization
+- 🌓 **Dark Mode** - Toggle between light and dark themes for comfortable drawing
+- 💾 **Export Functionality** - Save your artwork as PNG images
+- 🔗 **Room Sharing** - Share room links to invite others to collaborate
+- ⌨️ **Keyboard Shortcuts** - Powerful keyboard shortcuts for quick tool switching
+- 📱 **Mobile Support** - Full touch support for drawing on mobile devices
+- 👥 **User Management** - See who's online with color-coded user indicators
+- 🎯 **Smart Input Handling** - Keyboard shortcuts don't interfere with text input
 
 ## 🚀 Quick Start
 
@@ -41,109 +52,245 @@ For development with auto-reload:
 npm run dev
 ```
 
+## 🎨 Complete Feature List
+
+### Drawing Tools
+
+#### Core Drawing Features
+- **Brush Tool** 🖌️ - Draw with customizable colors and stroke width
+  - Color picker for choosing any color
+  - 8-color palette for quick color selection
+  - Adjustable stroke width (1-50 pixels)
+  - Real-time brush preview
+
+- **Eraser Tool** 🧹 - Erase parts of the drawing
+  - Same stroke width control as brush
+  - Smooth erasing with proper compositing
+
+#### Canvas Operations
+- **Undo** ↶ - Undo last drawing operation (global, affects all users)
+- **Redo** ↷ - Redo last undone operation (global, affects all users)
+- **Clear Canvas** 🗑️ - Clear the entire canvas (affects all users)
+- **Export Canvas** 💾 - Export canvas as PNG image (Ctrl+S)
+  - Automatic file naming with timestamp
+  - High-quality PNG export
+
+### Real-time Collaboration
+
+- **Live Drawing Synchronization** - See other users' strokes as they draw in real-time
+- **User Cursors** - Visual indicators showing where other users are pointing
+- **User List** - See who's online with:
+  - Color-coded user badges
+  - Auto-refresh every 3 seconds
+  - Manual refresh button
+  - User join/leave notifications
+
+- **Room System** 🚪 - Multiple isolated canvases (rooms)
+  - Create or join rooms with custom IDs
+  - Room isolation (separate canvases per room)
+  - Share room links to invite others
+  - URL parameter support (`?room=room-id`)
+  - Automatic room joining on connection
+
+### User Interface Features
+
+- **Dark Mode** 🌙 - Toggle between light and dark themes
+  - Persistent preference (saved in localStorage)
+  - Smooth theme transitions
+  - Optimized for both light and dark environments
+
+- **Username Management** 👤
+  - Username modal on first visit
+  - Change username anytime (✏️ button)
+  - Username suggestions (Artist, Creator, Designer, Sketch)
+  - Username persistence (auto-saved in localStorage)
+  - Username validation (max 20 characters)
+  - Visual feedback on username changes
+
+- **Toast Notifications** 🔔
+  - Success notifications (green)
+  - Error notifications (red)
+  - Info notifications (blue)
+  - Auto-dismiss after 3 seconds
+  - Smooth animations
+
+- **Status Bar** 📊
+  - Connection status indicator (Connected/Disconnected)
+  - Stroke count display
+  - FPS counter for performance monitoring
+  - Keyboard shortcuts hint
+
+### Keyboard Shortcuts
+
+All shortcuts are available when not typing in input fields:
+
+- **B** - Switch to Brush Tool
+- **E** - Switch to Eraser Tool
+- **D** - Toggle Dark Mode
+- **Ctrl+Z** / **Cmd+Z** - Undo
+- **Ctrl+Y** / **Cmd+Y** - Redo
+- **Ctrl+S** / **Cmd+S** - Export Canvas
+- **Ctrl+K** / **Cmd+K** - Clear Canvas
+- **?** - Show Keyboard Shortcuts Modal
+
+**Note**: Keyboard shortcuts are automatically disabled when typing in input fields (username, room ID) to prevent interference.
+
+### Advanced Features
+
+- **State Synchronization** - New users receive full canvas state when joining
+- **Conflict Resolution** - Handles simultaneous drawing operations gracefully
+- **Performance Optimization** - Efficient rendering with FPS monitoring
+- **Mobile Support** 📱 - Full touch event support for drawing on mobile devices
+- **Responsive Design** - Works on desktop, tablet, and mobile devices
+- **Connection Status** - Real-time connection status display
+- **Auto-reconnection** - Automatic reconnection with username preservation
+- **Room Persistence** - Maintains current room when changing username
+
 ## 🧪 Testing with Multiple Users
 
 1. **Open the application** in your browser: `http://localhost:3000`
 
-2. **Open multiple browser windows/tabs** or use different devices on the same network
+2. **Set a username** - Choose a username or use a suggested one
 
-3. **Join the same room** (default room is "default", or enter a custom room ID)
+3. **Open multiple browser windows/tabs** or use different devices on the same network
 
-4. **Start drawing** - you should see:
+4. **Join the same room** (default room is "default", or enter a custom room ID)
+
+5. **Start drawing** - you should see:
    - Your drawings appear in real-time
    - Other users' drawings appear as they draw
    - Cursor positions of other users
    - User list showing who's online
+   - Toast notifications for user joins/leaves
 
-5. **Test features**:
-   - Switch between brush and eraser tools
-   - Change colors and stroke width
-   - Try undo/redo (affects all users)
-   - Clear canvas (affects all users)
+6. **Test features**:
+   - Switch between brush and eraser tools (B/E keys or buttons)
+   - Change colors using color picker or palette
+   - Adjust stroke width with the slider
+   - Try undo/redo (Ctrl+Z/Ctrl+Y or buttons)
+   - Clear canvas (Ctrl+K or button)
+   - Export canvas (Ctrl+S or button)
+   - Toggle dark mode (D key or button)
+   - Share room link (🔗 button)
+   - Change username (✏️ button)
    - Join different rooms to test isolation
-
-## 🎨 Features
-
-### Drawing Tools
-- **Brush**: Draw with customizable colors and stroke width
-- **Eraser**: Erase parts of the drawing
-- **Color Picker**: Choose any color for drawing
-- **Stroke Width**: Adjustable from 1-50 pixels
-
-### Real-time Collaboration
-- **Live Drawing**: See other users' strokes as they draw (not after completion)
-- **User Cursors**: Visual indicators showing where other users are
-- **User Management**: See who's online with color-coded badges
-- **Room System**: Multiple isolated canvases (rooms)
-
-### Advanced Features
-- **Global Undo/Redo**: Undo/redo operations affect all users
-- **Conflict Resolution**: Handles simultaneous drawing operations
-- **State Synchronization**: New users receive full canvas state
-- **Mobile Support**: Touch events for drawing on mobile devices
-- **Performance Monitoring**: FPS counter for performance tracking
+   - Test keyboard shortcuts (press ? to see all)
 
 ## 📁 Project Structure
 
 ```
 collaborative-canvas/
 ├── client/
-│   ├── index.html          # Main HTML file
-│   ├── style.css           # Styles
+│   ├── index.html          # Main HTML file with UI
+│   ├── style.css           # Styles and dark mode
+│   ├── main.ts             # App initialization and event handlers
 │   ├── canvas.ts           # Canvas drawing logic
-│   ├── websocket.ts        # WebSocket client
-│   └── main.ts             # App initialization
+│   ├── websocket.ts        # WebSocket client communication
+│   └── utils.ts            # Utility functions (Toast, export, clipboard)
 ├── server/
 │   ├── server.ts           # Express + WebSocket server
-│   ├── rooms.ts            # Room management
+│   ├── rooms.ts            # Room management and isolation
 │   └── drawing-state.ts    # Canvas state management
 ├── shared/
 │   └── types.ts            # Shared TypeScript types
+├── dist/                   # Compiled JavaScript (generated)
 ├── package.json
 ├── tsconfig.json           # Server TypeScript config
 ├── tsconfig.client.json    # Client TypeScript config
 ├── README.md
-└── ARCHITECTURE.md
+├── ARCHITECTURE.md         # Detailed architecture documentation
+├── DEPLOYMENT.md           # Deployment instructions
+└── TROUBLESHOOTING.md      # Troubleshooting guide
 ```
 
 ## 🔧 Technical Stack
 
-- **Frontend**: Vanilla TypeScript + HTML5 Canvas
-- **Backend**: Node.js + Express + Socket.io
-- **Language**: TypeScript
-- **Real-time**: WebSockets (Socket.io)
+- **Frontend**: 
+  - Vanilla TypeScript (no frameworks)
+  - HTML5 Canvas for drawing
+  - Modern CSS with dark mode support
+  - Responsive design
+  
+- **Backend**: 
+  - Node.js + Express
+  - Socket.io for WebSocket communication
+  - TypeScript for type safety
+  
+- **Real-time Communication**: 
+  - WebSockets (Socket.io)
+  - Event-based architecture
+  - State synchronization
+
+## 📝 Recent Changes & Improvements
+
+### Version 1.0.0 (Current)
+
+- ✅ **Fixed keyboard shortcut interference** - Shortcuts no longer interfere with text input in username and room fields
+- ✅ **Fixed change username functionality** - Change username button now works correctly even after initial setup
+- ✅ **Improved username management** - Username changes properly reconnect with room preservation
+- ✅ **Enhanced WebSocket handling** - Prevented duplicate connections, improved reconnection logic
+- ✅ **Added comprehensive features**:
+  - Dark mode with persistent preference
+  - Canvas export functionality
+  - Room link sharing
+  - Keyboard shortcuts with modal
+  - Color palette for quick color selection
+  - Toast notifications system
+  - FPS monitoring
+  - User list with auto-refresh
+  - Connection status indicators
 
 ## ⚠️ Known Limitations
 
 1. **No Persistence**: Canvas state is not saved to disk. All drawings are lost when the server restarts.
 
-2. **No Authentication**: Users are identified by socket ID only. No user accounts or authentication.
+2. **No Authentication**: Users are identified by socket ID and username only. No user accounts or authentication system.
 
-3. **Limited Scalability**: The current implementation stores all operations in memory. For many users or long sessions, this could consume significant memory.
+3. **Limited Scalability**: The current implementation stores all operations in memory. For many users or very long sessions, this could consume significant memory.
 
-4. **Image Export**: ✅ Now available! Use the export button (💾) or Ctrl+S.
+4. **Browser Compatibility**: Requires modern browsers with ES2020 support and WebSocket support (Chrome, Firefox, Safari, Edge).
 
-5. **Browser Compatibility**: Requires modern browsers with ES2020 support and WebSocket support.
+5. **Network Issues**: Basic reconnection handling. If connection is lost, the app will attempt to reconnect, but users may need to refresh the page in some cases.
 
-6. **Network Issues**: No automatic reconnection handling. If connection is lost, users need to refresh the page. (Note: Connection status is displayed in real-time)
-
-## 🐛 Known Bugs
+## 🐛 Known Issues
 
 1. **Cursor Position**: Cursor indicators may not update smoothly on very fast mouse movements.
 
-2. **Touch Drawing**: Touch drawing on mobile devices may have slight lag compared to mouse input.
+2. **Touch Drawing**: Touch drawing on mobile devices may have slight lag compared to mouse input due to touch event processing.
 
 3. **Undo/Redo Conflicts**: In rare cases with very fast operations, undo/redo may not sync perfectly across all clients.
 
-## ⏱️ Time Spent
+## 🔮 Future Enhancements
+
+- [ ] Canvas persistence (save/load drawings)
+- [ ] User authentication and accounts
+- [ ] Drawing history timeline
+- [ ] More drawing tools (shapes, text, images)
+- [ ] Layer support
+- [ ] Drawing templates
+- [ ] Collaborative cursors with names
+- [ ] Chat functionality
+- [ ] Drawing permissions (view-only, draw-only, admin)
+- [ ] Export in multiple formats (SVG, PDF, JPG)
+
+## 📚 Documentation
+
+- **ARCHITECTURE.md** - Detailed architecture and design decisions
+- **README.md** - Readme file about this project
+
+
+## ⏱️ Development Time
 
 - **Initial Setup**: 1 hour
 - **Backend Development**: 3 hours
 - **Frontend Development**: 4 hours
 - **Real-time Synchronization**: 2 hours
 - **Undo/Redo Implementation**: 2 hours
-- **Testing & Bug Fixes**: 2 hours
-- **Documentation**: 1 hour
+- **UI/UX Enhancements**: 3 hours
+- **Dark Mode & Export**: 2 hours
+- **Keyboard Shortcuts & Features**: 2 hours
+- **Testing & Bug Fixes**: 3 hours
+- **Documentation**: 2 hours
 
-**Total**: ~15 hours
+**Total**: ~24 hours
 

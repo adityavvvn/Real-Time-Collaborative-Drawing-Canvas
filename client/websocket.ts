@@ -38,6 +38,13 @@ export class WebSocketClient {
       return;
     }
 
+    // Disconnect existing connection if any to prevent duplicate connections
+    if (this.socket) {
+      this.socket.disconnect();
+      this.socket = null;
+      this.isConnected = false;
+    }
+
     this.socket = io(serverUrl, {
       transports: ['websocket', 'polling'],
     });

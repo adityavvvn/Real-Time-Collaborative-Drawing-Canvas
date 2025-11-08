@@ -4,4 +4,8 @@ dist/
 .DS_Store
 .env
 *.tsbuildinfo
-
+DEPLOYMENT.md
+RENDER_DEPLOYMENT.md
+render.yaml
+REQUIREMENTS_CHECKLIST.md
+TROUBLESHOOTING.md

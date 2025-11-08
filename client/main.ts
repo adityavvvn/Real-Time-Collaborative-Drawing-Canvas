@@ -73,18 +73,7 @@ class App {
 
     if (!modal || !usernameInput || !setUsernameBtn) return;
 
-    // If username exists, use it and connect immediately
-    if (savedUsername && savedUsername.trim()) {
-      this.currentUsername = savedUsername.trim();
-      this.updateCurrentUserDisplay();
-      this.wsClient.setUsername(this.currentUsername);
-      this.wsClient.connect();
-      return;
-    }
-
-    // Show modal if no username
-    modal.classList.add('show');
-
+    // Always set up event handlers, regardless of saved username
     // Handle suggestion buttons
     suggestionButtons.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -108,18 +97,28 @@ class App {
       this.handleSetUsername();
     });
 
-    // Handle change username button
+    // Handle change username button - always set this up
     if (changeUsernameBtn) {
       changeUsernameBtn.addEventListener('click', () => {
         modal.classList.add('show');
-        usernameInput.value = this.currentUsername;
+        usernameInput.value = this.currentUsername || '';
         usernameInput.focus();
         usernameInput.select();
       });
     }
 
-    // Focus input when modal opens
-    usernameInput.focus();
+    // If username exists, use it and connect immediately (but don't return early)
+    if (savedUsername && savedUsername.trim()) {
+      this.currentUsername = savedUsername.trim();
+      this.updateCurrentUserDisplay();
+      this.wsClient.setUsername(this.currentUsername);
+      this.wsClient.connect();
+    } else {
+      // Show modal if no username
+      modal.classList.add('show');
+      // Focus input when modal opens
+      usernameInput.focus();
+    }
   }
 
   private handleSetUsername(): void {
@@ -148,6 +147,10 @@ class App {
       return;
     }
 
+    // Check if username is different from current
+    const wasAlreadyConnected = this.wsClient.isConnected;
+    const usernameChanged = username !== this.currentUsername;
+
     // Save username
     this.currentUsername = username;
     localStorage.setItem('canvas-username', username);
@@ -159,9 +162,33 @@ class App {
     // Hide modal
     modal.classList.remove('show');
 
-    // Connect to server
-    this.wsClient.connect();
-    console.log('🔄 Attempting to connect to server...');
+    // Get current room ID before reconnecting
+    const roomInput = document.getElementById('roomInput') as HTMLInputElement;
+    const currentRoomId = roomInput?.value || 'default';
+
+    // If already connected and username changed, disconnect first to reconnect with new username
+    if (wasAlreadyConnected && usernameChanged) {
+      this.wsClient.disconnect();
+      Toast.info('Username changed. Reconnecting...');
+    }
+
+    // Connect to server (or reconnect if was disconnected)
+    if (!wasAlreadyConnected || usernameChanged) {
+      this.wsClient.connect();
+      console.log('🔄 Attempting to connect to server...');
+      
+      // After reconnecting, rejoin the current room (with a small delay to ensure connection is established)
+      if (wasAlreadyConnected && usernameChanged) {
+        setTimeout(() => {
+          if (this.wsClient.isConnected) {
+            this.wsClient.joinRoom(currentRoomId, username);
+          }
+        }, 500);
+      }
+    } else {
+      // If username didn't change and we're already connected, just show success
+      Toast.success('Username updated');
+    }
   }
 
   private updateCurrentUserDisplay(): void {
@@ -337,10 +364,16 @@ class App {
     shortcutHint?.addEventListener('click', showShortcuts);
 
     document.addEventListener('keydown', (e) => {
-      // Don't trigger shortcuts when typing in inputs
-      if ((e.target as HTMLElement).tagName === 'INPUT') {
-        if (e.key === 'Enter') return; // Allow Enter in inputs
-        if (e.ctrlKey || e.metaKey) return; // Allow Ctrl shortcuts
+      const target = e.target as HTMLElement;
+      const isInputField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
+      
+      // Don't trigger single-key shortcuts when typing in inputs
+      // But allow Ctrl/Cmd shortcuts (like Ctrl+S for export) to work in inputs
+      if (isInputField && !e.ctrlKey && !e.metaKey) {
+        // Allow Enter key to work in inputs (for form submission)
+        if (e.key !== 'Enter') {
+          return; // Don't trigger shortcuts when typing in input fields
+        }
       }
 
       // Keyboard shortcuts

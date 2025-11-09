@@ -7,21 +7,72 @@ This document describes the architecture, data flow, and technical decisions for
 ## System Architecture
 
 ```
-┌─────────────┐         WebSocket          ┌─────────────┐
-│   Client 1  │◄─────────────────────────►│             │
-└─────────────┘                            │   Server    │
-                                           │  (Node.js)  │
-┌─────────────┐                            │             │
-│   Client 2  │◄─────────────────────────►│  Socket.io  │
-└─────────────┘                            │             │
-                                           └─────────────┘
-┌─────────────┐                                    │
-│   Client N  │                                    │
-└─────────────┘                                    │
-                                           ┌─────────────┐
-                                           │ RoomManager │
-                                           │ DrawingState│
-                                           └─────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                         Client Layer                            │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐        │
+│  │   Browser 1  │  │   Browser 2  │  │   Browser N  │        │
+│  │  (User A)    │  │  (User B)    │  │  (User C)    │        │
+│  │              │  │              │  │              │        │
+│  │ ┌──────────┐ │  │ ┌──────────┐ │  │ ┌──────────┐ │        │
+│  │ │  Canvas  │ │  │ │  Canvas  │ │  │ │  Canvas  │ │        │
+│  │ │ Manager  │ │  │ │ Manager  │ │  │ │ Manager  │ │        │
+│  │ └────┬─────┘ │  │ └────┬─────┘ │  │ └────┬─────┘ │        │
+│  │      │       │  │      │       │  │      │       │        │
+│  │ ┌────┴─────┐ │  │ ┌────┴─────┐ │  │ ┌────┴─────┐ │        │
+│  │ │WebSocket │ │  │ │WebSocket │ │  │ │WebSocket │ │        │
+│  │ │  Client  │ │  │ │  Client  │ │  │ │  Client  │ │        │
+│  │ └────┬─────┘ │  │ └────┬─────┘ │  │ └────┬─────┘ │        │
+│  └──────┼───────┘  └──────┼───────┘  └──────┼───────┘        │
+│         │                 │                 │                 │
+│         └─────────────────┼─────────────────┘                 │
+│                           │                                   │
+└───────────────────────────┼───────────────────────────────────┘
+                            │
+                    WebSocket (Socket.io)
+                            │
+┌───────────────────────────┼───────────────────────────────────┐
+│                           ▼                                   │
+│                    Server Layer                                │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│  ┌──────────────────────────────────────────────────────────┐ │
+│  │              Express + Socket.io Server                   │ │
+│  │  ┌────────────────────────────────────────────────────┐  │ │
+│  │  │  Event Handlers                                    │  │ │
+│  │  │  • draw-start, draw-move, draw-end                 │  │ │
+│  │  │  • erase-start, erase-move, erase-end              │  │ │
+│  │  │  • undo, redo, clear-canvas                        │  │ │
+│  │  │  • cursor-move, join-room                          │  │ │
+│  │  └───────────────────┬────────────────────────────────┘  │ │
+│  └──────────────────────┼────────────────────────────────────┘ │
+│                         │                                      │
+│  ┌──────────────────────┴────────────────────────────────────┐ │
+│  │              Room Manager                                  │ │
+│  │  ┌──────────────────────────────────────────────────────┐ │ │
+│  │  │  Room Storage: Map<roomId, DrawingState>             │ │ │
+│  │  │  User Tracking: Map<userId, roomId>                  │ │ │
+│  │  │  • joinRoom(roomId, userId)                          │ │ │
+│  │  │  • leaveRoom(userId)                                 │ │ │
+│  │  │  • getRoomState(roomId)                              │ │ │
+│  │  └───────────────────┬──────────────────────────────────┘ │ │
+│  └──────────────────────┼────────────────────────────────────┘ │
+│                         │                                      │
+│  ┌──────────────────────┴────────────────────────────────────┐ │
+│  │           Drawing State Manager (Per Room)                 │ │
+│  │  ┌──────────────────────────────────────────────────────┐ │ │
+│  │  │  • operations: DrawingOperation[]                    │ │ │
+│  │  │  • undoStack: DrawingOperation[]                     │ │ │
+│  │  │  • addOperation(op)                                  │ │ │
+│  │  │  • undo()                                            │ │ │
+│  │  │  • redo()                                            │ │ │
+│  │  │  • clear()                                           │ │ │
+│  │  │  • getStateSnapshot()                                │ │ │
+│  │  └──────────────────────────────────────────────────────┘ │ │
+│  └────────────────────────────────────────────────────────────┘ │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ## Data Flow
@@ -32,31 +83,43 @@ This document describes the architecture, data flow, and technical decisions for
 User Action (Mouse/Touch)
     │
     ▼
-CanvasManager (Client)
-    │
-    ▼
-WebSocketClient.sendDrawStart/Move/End()
-    │
-    ▼
-Socket.io Client → Server
-    │
-    ▼
-Server receives event
-    │
-    ▼
-DrawingState.addOperation()
-    │
-    ▼
-Broadcast to all clients in room
-    │
-    ▼
-Other clients receive event
-    │
-    ▼
-CanvasManager.drawRemoteOperation()
-    │
-    ▼
-Canvas updated in real-time
+┌───────────────────────┐
+│  Canvas Manager       │  • Captures drawing events
+│  (Client)             │  • Applies to local canvas
+└───────────┬───────────┘
+            │
+            ▼
+┌───────────────────────┐
+│  WebSocket Client     │  • Sends draw events
+│  (Socket.io)          │  • Receives remote events
+└───────────┬───────────┘
+            │
+            ▼
+┌───────────────────────┐
+│  Socket.io Server     │  • Receives events
+│  • Event validation   │  • Room routing
+│  • State management   │  • Broadcast to room
+└───────────┬───────────┘
+            │
+            ▼
+┌───────────────────────┐
+│  Drawing State        │  • Stores operations
+│  • Add operation      │  • Maintains sequence
+│  • Update state       │  • Room isolation
+└───────────┬───────────┘
+            │
+            ▼
+┌───────────────────────┐
+│  Broadcast to Room    │  • All clients in room
+│  • Real-time sync     │  • Event propagation
+└───────────┬───────────┘
+            │
+            ▼
+┌───────────────────────┐
+│  Other Clients        │  • Receive events
+│  • Render on canvas   │  • Update UI
+│  • Show user cursors  │  • Sync state
+└───────────────────────┘
 ```
 
 ### State Synchronization Flow
@@ -65,29 +128,68 @@ Canvas updated in real-time
 New Client Connects
     │
     ▼
-Client sends 'join-room' event
-    │
-    ▼
-Server: RoomManager.joinRoom()
-    │
-    ▼
-Server: DrawingState.getStateSnapshot()
-    │
-    ▼
-Server sends 'state-sync' event
-    │
-    ▼
-Client receives full state
-    │
-    ▼
-Client: CanvasManager.clear()
-    │
-    ▼
-Client: Redraw all operations
-    │
-    ▼
-Client is synchronized
+┌───────────────────────┐
+│  Join Room Request    │  • roomId, userName
+└───────────┬───────────┘
+            │
+            ▼
+┌───────────────────────┐
+│  Room Manager         │  • Create/join room
+│  • Assign room        │  • Track user
+│  • Get room state     │  • User list update
+└───────────┬───────────┘
+            │
+            ▼
+┌───────────────────────┐
+│  Drawing State        │  • Get all operations
+│  • State snapshot     │  • Current sequence
+│  • User list          │  • Room data
+└───────────┬───────────┘
+            │
+            ▼
+┌───────────────────────┐
+│  State Sync Event     │  • Full state transfer
+│  • All operations     │  • User information
+│  • Sequence numbers   │  • Room metadata
+└───────────┬───────────┘
+            │
+            ▼
+┌───────────────────────┐
+│  Client Initialization│  • Clear canvas
+│  • Redraw all ops     │  • Render state
+│  • Update UI          │  • Join complete
+└───────────────────────┘
 ```
+
+### Key Components
+
+- **Client Layer**: Multiple browser clients with HTML5 Canvas, WebSocket connections, and local state management
+  - Canvas Manager handles drawing operations and local rendering
+  - WebSocket Client manages real-time communication with the server
+  - UI components for tools, colors, and user interface
+
+- **Server Layer**: Express server with Socket.io for WebSocket communication
+  - Event handlers process drawing events, undo/redo, and room management
+  - Handles client connections and disconnections
+  - Manages WebSocket message routing
+
+- **Room Manager**: Handles room isolation, user tracking, and room state management
+  - Maintains a map of room IDs to DrawingState instances
+  - Tracks which users are in which rooms
+  - Creates rooms on-demand when first user joins
+  - Manages user join/leave events
+
+- **Drawing State**: Per-room state management with operations array, undo/redo stack, and state snapshots
+  - Stores all drawing operations in sequential order
+  - Maintains undo stack for redo functionality
+  - Provides state snapshots for new client synchronization
+  - Ensures room isolation (each room has independent state)
+
+- **Real-time Sync**: Event-based communication for instant collaboration across all clients
+  - Broadcasts drawing events to all clients in the same room
+  - Synchronizes state changes (undo, redo, clear)
+  - Handles cursor movement updates
+  - Manages user presence (join/leave notifications)
 
 ## WebSocket Protocol
 

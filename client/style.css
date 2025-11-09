@@ -29,9 +29,11 @@ body {
     padding: 20px;
     position: relative;
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: hidden;
     display: flex;
     flex-direction: column;
+    width: 100%;
+    margin: 0;
 }
 
 body::before {
@@ -64,6 +66,7 @@ body::before {
     flex-direction: column;
     max-height: calc(100vh - 40px);
     height: calc(100vh - 40px);
+    min-width: 0; /* Prevent flex item overflow */
 }
 
 /* Header Styles */
@@ -229,6 +232,7 @@ header h1::before {
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
     transition: all 0.3s ease;
+    flex-wrap: wrap;
 }
 
 .tool-group:hover {
@@ -433,6 +437,8 @@ header h1::before {
     overflow: hidden;
     border-top: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
+    touch-action: none;
+    -webkit-overflow-scrolling: touch;
 }
 
 #drawingCanvas,
@@ -443,6 +449,16 @@ header h1::before {
     cursor: crosshair;
     touch-action: none;
     border-radius: 0;
+    display: block;
+}
+
+/* Ensure canvas fits container on mobile */
+@media (max-width: 768px) {
+    #drawingCanvas,
+    #cursorCanvas {
+        max-width: 100%;
+        max-height: 100%;
+    }
 }
 
 #drawingCanvas {
@@ -1118,91 +1134,479 @@ body.dark-mode .toast {
 
 @media (max-width: 768px) {
     body {
-        padding: 10px;
+        padding: 8px;
+        overflow-x: hidden;
     }
 
     .container {
         border-radius: 12px;
-        max-height: calc(100vh - 20px);
-        height: calc(100vh - 20px);
+        max-height: calc(100vh - 16px);
+        height: calc(100vh - 16px);
     }
 
     header {
         flex-direction: column;
-        gap: 16px;
+        gap: 12px;
         align-items: flex-start;
-        padding: 20px;
+        padding: 16px;
+    }
+
+    header h1 {
+        font-size: 20px;
+        width: 100%;
+    }
+
+    header h1::before {
+        font-size: 24px;
+    }
+
+    .user-info {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
     }
 
     .current-user {
         margin-right: 0;
-        margin-bottom: 8px;
+        margin-bottom: 0;
+        width: 100%;
+        justify-content: space-between;
     }
 
-    header h1 {
-        font-size: 22px;
+    .user-list {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .user-list .label {
+        font-size: 11px;
+    }
+
+    .header-actions {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-start;
+        gap: 8px;
+    }
+
+    .header-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
     }
 
     .toolbar {
-        padding: 12px 16px;
+        padding: 12px;
         gap: 8px;
+        flex-wrap: wrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     .tool-group {
-        padding: 6px 12px;
+        padding: 8px 12px;
         gap: 8px;
+        flex-wrap: wrap;
+        flex-shrink: 0;
+    }
+
+    .tool-group label {
+        font-size: 11px;
     }
 
     .tool-btn {
-        padding: 8px 14px;
+        padding: 10px 16px;
         font-size: 13px;
+        min-height: 44px;
+        min-width: 44px;
+        flex-shrink: 0;
+    }
+
+    #colorPicker {
+        width: 50px;
+        height: 36px;
+        min-width: 50px;
+        min-height: 36px;
+    }
+
+    #strokeWidth {
+        width: 100px;
+    }
+
+    #strokeWidthValue {
+        min-width: 32px;
+        font-size: 12px;
+    }
+
+    .color-palette {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+
+    .color-swatch {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        min-height: 32px;
+    }
+
+    .room-input-group {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
     }
 
     #roomInput {
-        width: 140px;
-        padding: 8px 12px;
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 13px;
+        min-height: 44px;
+    }
+
+    #joinRoomBtn {
+        width: 100%;
+        margin-top: 8px;
     }
 
     .status-bar {
-        padding: 12px 16px;
+        padding: 12px;
         flex-direction: column;
         gap: 8px;
         align-items: flex-start;
+        font-size: 12px;
+    }
+
+    .status-left, .status-right {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: space-between;
+    }
+
+    .stat-badge {
+        font-size: 11px;
+        padding: 4px 10px;
+    }
+
+    .shortcut-hint {
+        font-size: 10px;
+        padding: 4px 6px;
+    }
+
+    #fpsCounter {
+        font-size: 11px;
+        padding: 4px 10px;
+    }
+
+    .modal-content {
+        width: 95%;
+        max-width: 95%;
+        margin: 10px;
+    }
+
+    .modal-header {
+        padding: 24px 20px;
+    }
+
+    .modal-header h2 {
+        font-size: 22px;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    .username-suggestions {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .suggestion-btn {
+        width: 100%;
+        padding: 10px 16px;
+        min-height: 44px;
+    }
+
+    .toast-container {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        align-items: stretch;
+    }
+
+    .toast {
+        min-width: auto;
+        max-width: 100%;
+        width: 100%;
     }
 }
 
 @media (max-width: 480px) {
     body {
-        padding: 5px;
+        padding: 4px;
     }
 
     .container {
-        max-height: calc(100vh - 10px);
-        height: calc(100vh - 10px);
+        max-height: calc(100vh - 8px);
+        height: calc(100vh - 8px);
+        border-radius: 8px;
+    }
+
+    header {
+        padding: 12px;
+        gap: 10px;
     }
 
     header h1 {
+        font-size: 18px;
+    }
+
+    header h1::before {
         font-size: 20px;
     }
 
+    .user-info {
+        gap: 10px;
+    }
+
+    .current-user {
+        padding: 6px 12px;
+    }
+
+    .user-name {
+        font-size: 13px;
+    }
+
+    .change-username-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+
+    .header-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+
     .toolbar {
+        padding: 8px;
+        gap: 6px;
+    }
+
+    .tool-group {
+        padding: 6px 10px;
+        gap: 6px;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .tool-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+        min-height: 40px;
+        flex: 1;
+    }
+
+    .tool-btn span {
+        font-size: 14px;
+    }
+
+    #colorPicker {
+        width: 44px;
+        height: 32px;
+    }
+
+    #strokeWidth {
+        width: 80px;
+    }
+
+    .color-palette {
+        gap: 3px;
+    }
+
+    .color-swatch {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        min-height: 28px;
+    }
+
+    .room-input-group {
+        width: 100%;
         flex-direction: column;
         align-items: stretch;
     }
 
-    .tool-group {
-        justify-content: space-between;
+    #roomInput {
+        width: 100%;
+        padding: 8px 10px;
+        font-size: 12px;
+        min-height: 40px;
+    }
+
+    #joinRoomBtn {
+        width: 100%;
+        margin-top: 6px;
+    }
+
+    .status-bar {
+        padding: 10px;
+        font-size: 11px;
+    }
+
+    .status-left, .status-right {
+        gap: 6px;
+    }
+
+    .stat-badge {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+
+    .shortcut-hint {
+        font-size: 9px;
+        display: none; /* Hide on very small screens to save space */
+    }
+
+    #fpsCounter {
+        font-size: 10px;
+        padding: 3px 8px;
     }
 
     .user-badge {
+        font-size: 10px;
+        padding: 4px 10px;
+    }
+
+    .modal-content {
+        width: 98%;
+        max-width: 98%;
+        margin: 5px;
+        border-radius: 16px;
+    }
+
+    .modal-header {
+        padding: 20px 16px;
+    }
+
+    .modal-header h2 {
+        font-size: 20px;
+    }
+
+    .modal-header p {
+        font-size: 13px;
+    }
+
+    .modal-body {
+        padding: 16px;
+    }
+
+    #usernameInput {
+        padding: 12px 14px;
+        font-size: 14px;
+        min-height: 44px;
+    }
+
+    .input-group label {
+        font-size: 12px;
+    }
+
+    .btn-primary {
+        padding: 12px 24px;
+        font-size: 14px;
+        min-height: 44px;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .toast {
+        padding: 12px 16px;
+        border-radius: 10px;
+    }
+
+    .toast-title {
+        font-size: 13px;
+    }
+
+    .toast-message {
         font-size: 11px;
-        padding: 6px 12px;
     }
 }
 
-/* Smooth Scroll */
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+    .tool-btn,
+    .header-btn,
+    .change-username-btn,
+    .refresh-btn,
+    .suggestion-btn,
+    .btn-primary {
+        -webkit-tap-highlight-color: rgba(102, 126, 234, 0.2);
+        touch-action: manipulation;
+    }
+
+    .tool-btn:active,
+    .header-btn:active {
+        transform: scale(0.95);
+    }
+
+    /* Prevent text selection on buttons */
+    .tool-btn,
+    .header-btn,
+    .change-username-btn,
+    .refresh-btn {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    /* Prevent pull-to-refresh on canvas */
+    .canvas-container {
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Improve touch target sizes for color swatches on mobile */
+    @media (max-width: 768px) {
+        .color-swatch {
+            min-width: 32px;
+            min-height: 32px;
+        }
+    }
+}
+
+/* iOS specific fixes */
+@supports (-webkit-touch-callout: none) {
+    .canvas-container {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    input, textarea {
+        font-size: 16px; /* Prevents iOS zoom on focus */
+    }
+    
+    @media (max-width: 480px) {
+        #usernameInput,
+        #roomInput {
+            font-size: 16px;
+        }
+    }
+}
+
+/* Smooth Scroll & Prevent Horizontal Scroll */
 html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+}
+
+body {
+    overflow-x: hidden;
+    width: 100%;
 }
 
 /* Focus Visible */
